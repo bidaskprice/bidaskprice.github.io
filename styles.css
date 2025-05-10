@@ -7,3 +7,59 @@
 .accordion-header.active .material-symbols-outlined {
     transform: rotate(180deg);
 }
+
+/* Tab Styles */
+.tab-button {
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+.tab-button:not(.active) {
+    background-color: transparent;
+    color: #64748b;
+}
+
+.tab-button:not(.active):hover {
+    background-color: #f1f5f9;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Flash Animation */
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.flash {
+    animation: flash 0.5s ease-in-out;
+}
+
+/* Close Button */
+.close-tab {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+    padding: 2px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-button:hover .close-tab,
+.tab-button.active .close-tab {
+    opacity: 1;
+}
+
+.close-tab:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
