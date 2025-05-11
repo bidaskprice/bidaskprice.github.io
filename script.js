@@ -41,6 +41,189 @@ document.addEventListener('DOMContentLoaded', function() {
         return signals.filter(s => s.signal === signalType).length;
     });
 
+    // Add helper to count technical indicator signals by type
+    Handlebars.registerHelper('countIndicatorSignalsByType', function(signals, signalType) {
+        if (!signals || !Array.isArray(signals)) return 0;
+        return signals.filter(s => s.signal === signalType).length;
+    });
+
+    // Add helper to get total count of MA signals by period
+    Handlebars.registerHelper('countMAByPeriod', function(signals, period) {
+        if (!signals || !Array.isArray(signals)) return 0;
+        return signals.filter(s => s.period === period).length;
+    });
+    
+    // Add helper to get total count of all technical indicators
+    Handlebars.registerHelper('countAllTechnicalIndicators', function(signals) {
+        if (!signals || !Array.isArray(signals)) return 0;
+        return signals.length;
+    });
+    
+    // Add helper to get summary of indicator counts
+    Handlebars.registerHelper('getIndicatorSummary', function(ma_signals, indicator_signals) {
+        const result = {
+            ma_count: ma_signals && Array.isArray(ma_signals) ? ma_signals.length : 0,
+            indicator_count: indicator_signals && Array.isArray(indicator_signals) ? indicator_signals.length : 0,
+            total_count: 0,
+            ma_buy: 0,
+            ma_sell: 0,
+            ma_neutral: 0,
+            tech_buy: 0,
+            tech_sell: 0,
+            tech_neutral: 0,
+            total_buy: 0,
+            total_sell: 0,
+            total_neutral: 0
+        };
+        
+        result.total_count = result.ma_count + result.indicator_count;
+        
+        // Count MA signals by type
+        if (ma_signals && Array.isArray(ma_signals)) {
+            result.ma_buy = ma_signals.filter(s => s.signal === 'Mua').length;
+            result.ma_sell = ma_signals.filter(s => s.signal === 'Bán').length;
+            result.ma_neutral = ma_signals.filter(s => s.signal === 'Trung tính').length;
+        }
+        
+        // Count technical indicators by type
+        if (indicator_signals && Array.isArray(indicator_signals)) {
+            result.tech_buy = indicator_signals.filter(s => s.signal === 'Mua').length;
+            result.tech_sell = indicator_signals.filter(s => s.signal === 'Bán').length;
+            result.tech_neutral = indicator_signals.filter(s => s.signal === 'Trung tính').length;
+        }
+        
+        // Calculate totals
+        result.total_buy = result.ma_buy + result.tech_buy;
+        result.total_sell = result.ma_sell + result.tech_sell;
+        result.total_neutral = result.ma_neutral + result.tech_neutral;
+        
+        return result;
+    });
+
+    // Add helper to get signal strength based on buy vs sell counts
+    Handlebars.registerHelper('signalStrength', function(signals) {
+        if (!signals || !Array.isArray(signals)) return { strength: 'Không có dữ liệu', class: 'text-gray-500' };
+        
+        const buyCount = signals.filter(s => s.signal === 'Mua').length;
+        const sellCount = signals.filter(s => s.signal === 'Bán').length;
+        const neutralCount = signals.filter(s => s.signal === 'Trung tính').length;
+        
+        // Calculate the buy/sell ratio
+        const total = buyCount + sellCount + neutralCount;
+        if (total === 0) return { strength: 'Không có dữ liệu', class: 'text-gray-500' };
+        
+        const buyRatio = buyCount / total;
+        const sellRatio = sellCount / total;
+        
+        // Determine signal strength based on ratios
+        if (buyRatio >= 0.7) return { 
+            strength: 'Mua mạnh', 
+            class: 'text-green-700',
+            icon: 'trending_up'
+        };
+        if (buyRatio >= 0.5) return { 
+            strength: 'Mua', 
+            class: 'text-green-600',
+            icon: 'trending_up'
+        };
+        if (sellRatio >= 0.7) return { 
+            strength: 'Bán mạnh', 
+            class: 'text-red-700',
+            icon: 'trending_down'
+        };
+        if (sellRatio >= 0.5) return { 
+            strength: 'Bán', 
+            class: 'text-red-600',
+            icon: 'trending_down'
+        };
+        
+        return { 
+            strength: 'Trung tính', 
+            class: 'text-gray-600',
+            icon: 'trending_flat'
+        };
+    });
+
+    // Add helper to analyze all technical indicators (both MA and other indicators)
+    Handlebars.registerHelper('allSignalsStrength', function(maSignals, indicatorSignals) {
+        if ((!maSignals || !Array.isArray(maSignals)) && 
+            (!indicatorSignals || !Array.isArray(indicatorSignals))) {
+            return { strength: 'Không có dữ liệu', class: 'text-gray-500' };
+        }
+        
+        // Combine signals from both sources
+        const allSignals = [];
+        
+        // Add MA signals if available
+        if (maSignals && Array.isArray(maSignals)) {
+            allSignals.push(...maSignals);
+        }
+        
+        // Add indicator signals if available
+        if (indicatorSignals && Array.isArray(indicatorSignals)) {
+            allSignals.push(...indicatorSignals);
+        }
+        
+        const buyCount = allSignals.filter(s => s.signal === 'Mua').length;
+        const sellCount = allSignals.filter(s => s.signal === 'Bán').length;
+        const neutralCount = allSignals.filter(s => s.signal === 'Trung tính').length;
+        
+        // Calculate the buy/sell ratio
+        const total = buyCount + sellCount + neutralCount;
+        if (total === 0) return { strength: 'Không có dữ liệu', class: 'text-gray-500' };
+        
+        const buyRatio = buyCount / total;
+        const sellRatio = sellCount / total;
+        
+        // Determine signal strength based on ratios
+        if (buyRatio >= 0.7) return { 
+            strength: 'Mua mạnh', 
+            class: 'text-green-700',
+            icon: 'trending_up',
+            buyCount,
+            sellCount,
+            neutralCount,
+            total
+        };
+        if (buyRatio >= 0.5) return { 
+            strength: 'Mua', 
+            class: 'text-green-600',
+            icon: 'trending_up',
+            buyCount,
+            sellCount,
+            neutralCount,
+            total
+        };
+        if (sellRatio >= 0.7) return { 
+            strength: 'Bán mạnh', 
+            class: 'text-red-700',
+            icon: 'trending_down',
+            buyCount,
+            sellCount,
+            neutralCount,
+            total
+        };
+        if (sellRatio >= 0.5) return { 
+            strength: 'Bán', 
+            class: 'text-red-600',
+            icon: 'trending_down',
+            buyCount,
+            sellCount,
+            neutralCount,
+            total
+        };
+        
+        return { 
+            strength: 'Trung tính', 
+            class: 'text-gray-600',
+            icon: 'trending_flat',
+            buyCount,
+            sellCount,
+            neutralCount,
+            total
+        };
+    });
+
     // Render data from prediction-data.js
     renderStockData();
 
@@ -177,6 +360,47 @@ function registerHandlebarsHelpers() {
         if (typeof value !== 'number') value = parseFloat(value);
         if (isNaN(value)) return value;
         return value > 0 ? '+' + value : value;
+    });
+
+    // Helper to format RS (Relative Strength) values
+    Handlebars.registerHelper('formatRS', function(value, name) {
+        if (name !== "RS(52)" || value === null || value === undefined) return value;
+        
+        // Format the value
+        const formattedValue = parseFloat(value).toFixed(2);
+        
+        // Determine the class and tooltip based on RS value
+        let className = 'text-gray-800';
+        let tooltip = '';
+        
+        if (value >= 1.5) {
+            className = 'text-green-800 font-bold';
+            tooltip = 'Cổ phiếu mạnh hơn thị trường 50% trở lên';
+        } else if (value >= 1.2) {
+            className = 'text-green-600 font-semibold';
+            tooltip = 'Cổ phiếu mạnh hơn thị trường 20% trở lên';
+        } else if (value >= 1.0) {
+            className = 'text-green-500';
+            tooltip = 'Cổ phiếu mạnh hơn thị trường';
+        } else if (value <= 0.5) {
+            className = 'text-red-800 font-bold';
+            tooltip = 'Cổ phiếu yếu hơn thị trường 50% trở lên';
+        } else if (value <= 0.8) {
+            className = 'text-red-600 font-semibold';
+            tooltip = 'Cổ phiếu yếu hơn thị trường 20% trở lên';
+        } else {
+            className = 'text-gray-600';
+            tooltip = 'Cổ phiếu có hiệu suất tương đương thị trường';
+        }
+        
+        return new Handlebars.SafeString(`
+            <div class="relative inline-block group">
+                <span class="${className}">${formattedValue}</span>
+                <div class="absolute z-10 hidden group-hover:block bg-white border border-gray-200 shadow-lg rounded-lg p-2 text-sm text-gray-700 min-w-[200px] left-0 top-full mt-1">
+                    ${tooltip}
+                </div>
+            </div>
+        `);
     });
 }
 
@@ -329,6 +553,97 @@ function setupTabs() {
                     </div>
                 </div>
 
+                <div class="mb-6 bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-semibold mb-3">Tổng hợp chỉ báo kỹ thuật</h3>
+                    {{#with (getIndicatorSummary ma_signals indicator_signals)}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- MA Signals -->
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <h4 class="font-medium text-blue-700 mb-2 text-center">Đường MA</h4>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mx-auto mb-2">
+                                <span class="text-2xl font-bold text-blue-700">{{ma_count}}</span>
+                            </div>
+                            <div class="flex gap-2 justify-center mb-2">
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Mua</span>
+                                    <span class="text-lg font-bold text-green-700">{{ma_buy}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Bán</span>
+                                    <span class="text-lg font-bold text-red-700">{{ma_sell}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">TT</span>
+                                    <span class="text-lg font-bold text-gray-700">{{ma_neutral}}</span>
+                                </div>
+                            </div>
+                            <div class="text-center text-xs text-gray-500">
+                                {{#if (eq name "RS(52)")}}
+                                Sức mạnh cổ phiếu so với VNINDEX trong 52 tuần
+                                {{else}}
+                                SMA/EMA các chu kỳ 5, 10, 20, 50, 100, 200
+                                {{/if}}
+                            </div>
+                        </div>
+                        
+                        <!-- Technical Indicator Signals -->
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <h4 class="font-medium text-blue-700 mb-2 text-center">Chỉ báo kỹ thuật</h4>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mx-auto mb-2">
+                                <span class="text-2xl font-bold text-purple-700">{{indicator_count}}</span>
+                            </div>
+                            <div class="flex gap-2 justify-center mb-2">
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Mua</span>
+                                    <span class="text-lg font-bold text-green-700">{{tech_buy}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Bán</span>
+                                    <span class="text-lg font-bold text-red-700">{{tech_sell}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">TT</span>
+                                    <span class="text-lg font-bold text-gray-700">{{tech_neutral}}</span>
+                                </div>
+                            </div>
+                            <div class="text-center text-xs text-gray-500">
+                                RSI, MACD, Stochastic, CCI, Williams %R, v.v.
+                            </div>
+                        </div>
+                        
+                        <!-- Combined Signal Analysis -->
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <h4 class="font-medium text-blue-700 mb-2 text-center">Tổng hợp</h4>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mx-auto mb-2">
+                                <span class="text-2xl font-bold text-green-700">{{total_count}}</span>
+                            </div>
+                            <div class="flex gap-2 justify-center mb-2">
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Mua</span>
+                                    <span class="text-lg font-bold text-green-700">{{total_buy}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Bán</span>
+                                    <span class="text-lg font-bold text-red-700">{{total_sell}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">TT</span>
+                                    <span class="text-lg font-bold text-gray-700">{{total_neutral}}</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                {{#with (allSignalsStrength ../../ma_signals ../../indicator_signals)}}
+                                <span class="px-2 py-1 rounded-full text-sm {{class}} bg-gray-50 inline-flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">{{icon}}</span>
+                                    {{strength}}
+                                </span>
+                                {{/with}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/with}}
+                </div>
+
                 <div class="mb-6">
                     <h3 class="font-semibold mb-2 text-blue-700">Khuyến nghị</h3>
                     <div class="p-4 bg-gray-50 rounded-lg">
@@ -370,7 +685,13 @@ function setupTabs() {
                                         </div>
                                         {{/if}}
                                     </td>
-                                    <td class="px-4 py-2 text-right border-b border-gray-200 font-mono">{{format2Decimals value}}</td>
+                                    <td class="px-4 py-2 text-right border-b border-gray-200 font-mono">
+                                        {{#if (eq name "RS(52)")}}
+                                        {{formatRS value name}}
+                                        {{else}}
+                                        {{format2Decimals value}}
+                                        {{/if}}
+                                    </td>
                                     <td class="px-4 py-2 text-center border-b border-gray-200">
                                         <span class="px-2 py-1 rounded text-sm font-medium {{#if (eq signal "Mua")}}bg-green-100 text-green-800{{else if (eq signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
                                             {{signal}}

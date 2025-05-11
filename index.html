@@ -81,6 +81,8 @@
                                         <th class="px-4 py-2">Xu hướng</th>
                                         <th class="px-4 py-2">Độ mạnh</th>
                                         <th class="px-4 py-2">Độ tin cậy</th>
+                                        <th class="px-4 py-2">MA</th>
+                                        <th class="px-4 py-2">Kỹ thuật</th>
                                         <th class="px-4 py-2">Khuyến nghị</th>
                                     </tr>
                                 </thead>
@@ -134,16 +136,38 @@
             </div>
             
             {{#if ma_signals}}
-            <div class="flex gap-2 mb-3 justify-center">
-                <div class="text-xs bg-green-100 text-green-800 py-1 px-2 rounded-full" title="Tín hiệu Mua">
-                    {{countSignalsByType ma_signals "Mua"}} Mua
+            <div class="mb-3">
+                <div class="text-sm font-medium mb-1">Tổng hợp tín hiệu:</div>
+                {{#with (getIndicatorSummary ma_signals indicator_signals)}}
+                <div class="flex flex-col gap-1 p-2 bg-gray-50 rounded-md">
+                    <div class="flex justify-between items-center text-xs text-gray-600">
+                        <span>Đường MA ({{ma_count}}):</span>
+                        <div class="flex gap-1">
+                            <span class="px-1.5 rounded bg-green-100 text-green-800">{{ma_buy}}</span>
+                            <span class="px-1.5 rounded bg-red-100 text-red-800">{{ma_sell}}</span>
+                            <span class="px-1.5 rounded bg-gray-100 text-gray-800">{{ma_neutral}}</span>
+                        </div>
+                    </div>
+                    {{#if ../indicator_signals}}
+                    <div class="flex justify-between items-center text-xs text-gray-600">
+                        <span>Chỉ báo kỹ thuật ({{indicator_count}}):</span>
+                        <div class="flex gap-1">
+                            <span class="px-1.5 rounded bg-green-100 text-green-800">{{tech_buy}}</span>
+                            <span class="px-1.5 rounded bg-red-100 text-red-800">{{tech_sell}}</span>
+                            <span class="px-1.5 rounded bg-gray-100 text-gray-800">{{tech_neutral}}</span>
+                        </div>
+                    </div>
+                    {{/if}}
+                    <div class="flex justify-between items-center text-xs font-medium mt-1 pt-1 border-t border-gray-200">
+                        <span>Tổng hợp ({{total_count}}):</span>
+                        <div class="flex gap-1">
+                            <span class="px-1.5 rounded bg-green-100 text-green-800">{{total_buy}} Mua</span>
+                            <span class="px-1.5 rounded bg-red-100 text-red-800">{{total_sell}} Bán</span>
+                            <span class="px-1.5 rounded bg-gray-100 text-gray-800">{{total_neutral}} TT</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-xs bg-red-100 text-red-800 py-1 px-2 rounded-full" title="Tín hiệu Bán">
-                    {{countSignalsByType ma_signals "Bán"}} Bán
-                </div>
-                <div class="text-xs bg-gray-100 text-gray-800 py-1 px-2 rounded-full" title="Tín hiệu Trung tính">
-                    {{countSignalsByType ma_signals "Trung tính"}} Trung tính
-                </div>
+                {{/with}}
             </div>
             {{/if}}
         </div>
@@ -178,6 +202,38 @@
                     </span>
                     <span>{{trend_confidence}}</span>
                 </div>
+            </td>
+            <td class="px-4 py-2 text-sm">
+                {{#if ma_signals}}
+                <div class="flex items-center gap-1 justify-center">
+                    {{#with (getIndicatorSummary ma_signals indicator_signals)}}
+                    <span class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-800 font-medium">{{ma_count}}</span>
+                    <div class="flex">
+                        <span class="px-1 rounded-l bg-green-100 text-green-800">{{ma_buy}}</span>
+                        <span class="px-1 bg-red-100 text-red-800">{{ma_sell}}</span>
+                        <span class="px-1 rounded-r bg-gray-100 text-gray-800">{{ma_neutral}}</span>
+                    </div>
+                    {{/with}}
+                </div>
+                {{else}}
+                <span class="text-xs text-gray-500">Không có dữ liệu</span>
+                {{/if}}
+            </td>
+            <td class="px-4 py-2 text-sm">
+                {{#if indicator_signals}}
+                <div class="flex items-center gap-1 justify-center">
+                    {{#with (getIndicatorSummary ma_signals indicator_signals)}}
+                    <span class="w-6 h-6 flex items-center justify-center rounded-full bg-purple-100 text-purple-800 font-medium">{{indicator_count}}</span>
+                    <div class="flex">
+                        <span class="px-1 rounded-l bg-green-100 text-green-800">{{tech_buy}}</span>
+                        <span class="px-1 bg-red-100 text-red-800">{{tech_sell}}</span>
+                        <span class="px-1 rounded-r bg-gray-100 text-gray-800">{{tech_neutral}}</span>
+                    </div>
+                    {{/with}}
+                </div>
+                {{else}}
+                <span class="text-xs text-gray-500">Không có dữ liệu</span>
+                {{/if}}
             </td>
             <td class="px-4 py-2 text-sm">{{recommendation}}</td>
         </tr>
