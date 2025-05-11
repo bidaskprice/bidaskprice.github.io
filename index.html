@@ -12,16 +12,16 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phân tích xu hướng cổ phiếu</title>
+    <title>StockPal - Bid & Ask Price</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
-    <script src="prediction-2025-05-09.js" defer></script>
+    <script src="prediction-2025-05-11.js" defer></script>
     <script src="script.js" defer></script>
 </head>
 <body class="flex flex-col h-screen bg-slate-50">
-    <nav class="bg-gray-800 text-white p-4">
+    <nav class="bg-gray-800 text-white p-2">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-center sm:items-stretch sm:justify-start">
                 <div class="flex shrink-0 items-center">
@@ -31,7 +31,7 @@
                     <h1 class="text-xl font-bold">Xu hướng</h1>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">search</span>
                     <input type="text" id="stockSearch" placeholder="Tìm mã cổ phiếu..." class="pl-8 pr-4 py-1 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -44,7 +44,7 @@
     <div class="flex flex-1 overflow-hidden">
         <div class="flex-1 flex flex-col overflow-hidden bg-slate-50">
             <!-- Tab Bar -->
-            <div class="flex items-center justify-between gap-4 p-4 bg-white border-b border-gray-200">
+            <div class="flex items-center justify-between gap-2 p-2 bg-white border-b border-gray-200">
                 <div class="flex flex-wrap items-center gap-2" id="tabList">
                     <!-- Stock List Tab (Fixed) -->
                     <button class="tab-button active px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-medium" data-tab="stockList">
@@ -58,19 +58,19 @@
             <div class="flex-1 overflow-y-auto" id="tabContent">
                 <!-- Stock List Content -->
                 <div class="tab-content active" id="stockList">
-                    <div class="flex items-center gap-2 p-4 bg-white border-b border-gray-200">
-                        <button id="gridViewBtn" class="p-2 rounded hover:bg-gray-100 active:bg-gray-200" title="Dạng lưới">
+                    <div class="flex items-center gap-2 p-2 bg-white border-b border-gray-200">
+                        <button id="gridViewBtn" class="flex items-center justify-center p-2 rounded hover:bg-gray-100 active:bg-gray-200" title="Dạng lưới">
                             <span class="material-symbols-outlined">grid_view</span>
                         </button>
-                        <button id="tableViewBtn" class="p-2 rounded hover:bg-gray-100 active:bg-gray-200" title="Dạng bảng">
+                        <button id="tableViewBtn" class="flex items-center justify-center p-2 rounded hover:bg-gray-100 active:bg-gray-200" title="Dạng bảng">
                             <span class="material-symbols-outlined">table_rows</span>
                         </button>
                         <div id="lastUpdated" class="text-sm text-gray-500 ml-auto"></div>
                     </div>
-                    <div id="gridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
+                    <div id="gridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 p-2">
                         <!-- Grid view content will be loaded here -->
                     </div>
-                    <div id="tableView" class="hidden p-4">
+                    <div id="tableView" class="hidden p-2">
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white border border-gray-200">
                                 <thead class="bg-gray-50">
@@ -98,7 +98,7 @@
 
     <!-- Handlebars Templates -->
     <script id="card-template" type="text/x-handlebars-template">
-        <div class="stock-card bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all" data-symbol="{{symbol}}">
+        <div class="stock-card bg-white rounded-lg border border-slate-200 p-2 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all" data-symbol="{{symbol}}">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <img src="./assets/logos/{{symbol}}.svg" alt="{{symbol}}" class="w-10 h-10 mr-3">
@@ -132,6 +132,20 @@
                 <div class="font-medium mb-1">Khuyến nghị:</div>
                 <div class="text-sm">{{recommendation}}</div>
             </div>
+            
+            {{#if ma_signals}}
+            <div class="flex gap-2 mb-3 justify-center">
+                <div class="text-xs bg-green-100 text-green-800 py-1 px-2 rounded-full" title="Tín hiệu Mua">
+                    {{countSignalsByType ma_signals "Mua"}} Mua
+                </div>
+                <div class="text-xs bg-red-100 text-red-800 py-1 px-2 rounded-full" title="Tín hiệu Bán">
+                    {{countSignalsByType ma_signals "Bán"}} Bán
+                </div>
+                <div class="text-xs bg-gray-100 text-gray-800 py-1 px-2 rounded-full" title="Tín hiệu Trung tính">
+                    {{countSignalsByType ma_signals "Trung tính"}} Trung tính
+                </div>
+            </div>
+            {{/if}}
         </div>
     </script>
     <script id="table-row-template" type="text/x-handlebars-template">
@@ -167,6 +181,60 @@
             </td>
             <td class="px-4 py-2 text-sm">{{recommendation}}</td>
         </tr>
+    </script>
+
+    <script id="ma-signals-template" type="text/x-handlebars-template">
+        <div class="bg-white rounded-lg border border-slate-200 p-2 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4">Phân tích đường MA</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left border-b border-gray-200">Chu kỳ</th>
+                            <th class="px-4 py-2 text-right border-b border-gray-200">SMA</th>
+                            <th class="px-4 py-2 text-center border-b border-gray-200">Tín hiệu SMA</th>
+                            <th class="px-4 py-2 text-right border-b border-gray-200">EMA</th>
+                            <th class="px-4 py-2 text-center border-b border-gray-200">Tín hiệu EMA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each (groupMAByPeriod ma_signals)}}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 border-b border-gray-200 font-medium">{{period}}</td>
+                            
+                            <!-- SMA value and signal -->
+                            <td class="px-4 py-2 text-right border-b border-gray-200 font-medium">
+                                {{#if sma.value}}{{sma.value}}{{else}}-{{/if}}
+                            </td>
+                            <td class="px-4 py-2 text-center border-b border-gray-200">
+                                {{#if sma.signal}}
+                                <span class="px-3 py-1 rounded-full text-sm font-medium {{#if (eq sma.signal "Mua")}}bg-green-100 text-green-800{{else if (eq sma.signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
+                                    {{sma.signal}}
+                                </span>
+                                {{else}}
+                                -
+                                {{/if}}
+                            </td>
+                            
+                            <!-- EMA value and signal -->
+                            <td class="px-4 py-2 text-right border-b border-gray-200 font-medium">
+                                {{#if ema.value}}{{ema.value}}{{else}}-{{/if}}
+                            </td>
+                            <td class="px-4 py-2 text-center border-b border-gray-200">
+                                {{#if ema.signal}}
+                                <span class="px-3 py-1 rounded-full text-sm font-medium {{#if (eq ema.signal "Mua")}}bg-green-100 text-green-800{{else if (eq ema.signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
+                                    {{ema.signal}}
+                                </span>
+                                {{else}}
+                                -
+                                {{/if}}
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </script>
 </body>
 </html>

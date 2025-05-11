@@ -1,65 +1,99 @@
+body {
+  font-size: 13px;
+}
+
 .trend-up {
-    color: #10b981; /* text-emerald-500 */
+  color: #10b981; /* text-emerald-500 */
 }
 .trend-down {
-    color: #ef4444; /* text-red-500 */
+  color: #ef4444; /* text-red-500 */
 }
 .accordion-header.active .material-symbols-outlined {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 /* Tab Styles */
 .tab-button {
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    position: relative;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
 }
 
 .tab-button:not(.active) {
-    background-color: transparent;
-    color: #64748b;
+  background-color: transparent;
+  color: #64748b;
 }
 
 .tab-button:not(.active):hover {
-    background-color: #f1f5f9;
+  background-color: #f1f5f9;
 }
 
 .tab-content {
-    display: none;
+  display: none;
 }
 
 .tab-content.active {
-    display: block;
+  display: block;
 }
 
 /* Flash Animation */
 @keyframes flash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .flash {
-    animation: flash 0.5s ease-in-out;
+  animation: flash 0.5s ease-in-out;
 }
 
 /* Close Button */
 .close-tab {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    margin-left: 0.5rem;
-    font-size: 0.875rem;
-    padding: 2px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  padding: 2px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab-button:hover .close-tab,
 .tab-button.active .close-tab {
-    opacity: 1;
+  opacity: 1;
 }
 
 .close-tab:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip Styles */
+.group:hover .hidden {
+  display: block;
+}
+
+.cursor-help {
+  cursor: help;
+}
+
+/* z-index for tooltips */
+.z-10 {
+  z-index: 10;
+}
+
+/* Tiny info icon */
+.info-icon-tiny {
+  font-size: 0.8rem !important;
+  width: 0.8rem;
+  height: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }

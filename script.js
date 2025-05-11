@@ -2,6 +2,45 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register Handlebars helpers
     registerHandlebarsHelpers();
 
+    // Register partial templates
+    Handlebars.registerPartial('ma-signals-template', `
+        <div class="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4">Phân tích đường MA</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Chu kỳ</th>
+                            <th class="px-4 py-2 text-left">Loại</th>
+                            <th class="px-4 py-2 text-right">Giá trị</th>
+                            <th class="px-4 py-2 text-center">Tín hiệu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each ma_signals}}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2">{{period}}</td>
+                            <td class="px-4 py-2">{{type}}</td>
+                            <td class="px-4 py-2 text-right">{{format2Decimals value}}</td>
+                            <td class="px-4 py-2 text-center">
+                                <span class="px-2 py-1 rounded text-sm {{#if (eq signal "Mua")}}bg-green-100 text-green-800{{else if (eq signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
+                                    {{signal}}
+                                </span>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `);
+
+    // Add helper to count signals by type
+    Handlebars.registerHelper('countSignalsByType', function(signals, signalType) {
+        if (!signals || !Array.isArray(signals)) return 0;
+        return signals.filter(s => s.signal === signalType).length;
+    });
+
     // Render data from prediction-data.js
     renderStockData();
 
@@ -59,6 +98,85 @@ function registerHandlebarsHelpers() {
             currency: 'VND',
             minimumFractionDigits: 0
         }).format(price);
+    });
+
+    // Add helper for comparing values
+    Handlebars.registerHelper('eq', function(a, b) {
+        return a === b;
+    });
+    
+    // Add helper to count signals by type
+    Handlebars.registerHelper('countSignalsByType', function(signals, signalType) {
+        if (!signals || !Array.isArray(signals)) return 0;
+        return signals.filter(s => s.signal === signalType).length;
+    });
+    
+    // Add helper to group MA signals by period
+    Handlebars.registerHelper('groupMAByPeriod', function(signals) {
+        if (!signals || !Array.isArray(signals)) return [];
+        
+        const periods = [5, 10, 20, 50, 100, 200];
+        const result = [];
+        
+        // Create an entry for each period
+        periods.forEach(period => {
+            const smaSignal = signals.find(s => s.period === period && s.type === 'SMA');
+            const emaSignal = signals.find(s => s.period === period && s.type === 'EMA');
+            
+            result.push({
+                period: period,
+                sma: {
+                    value: smaSignal ? smaSignal.value : null,
+                    signal: smaSignal ? smaSignal.signal : null
+                },
+                ema: {
+                    value: emaSignal ? emaSignal.value : null,
+                    signal: emaSignal ? emaSignal.signal : null
+                }
+            });
+        });
+        
+        return result;
+    });
+
+    // Helper to lookup signal object by name from indicator_signals
+    Handlebars.registerHelper('lookupSignal', function(signals, name) {
+        if (!signals || !Array.isArray(signals) || !name) return null;
+        return signals.find(s => s.name === name) || null;
+    });
+
+    // Helper to format a number to 2 decimal places
+    Handlebars.registerHelper('format2Decimals', function(value) {
+        const num = typeof value === 'number' ? value : parseFloat(value);
+        if (isNaN(num)) return value;
+        return num.toFixed(2);
+    });
+
+    Handlebars.registerHelper('priceChangeClass', function(change) {
+        if (typeof change !== 'number') change = parseFloat(change);
+        if (isNaN(change)) return 'text-gray-700';
+        if (change > 0) return 'text-green-600';
+        if (change < 0) return 'text-red-600';
+        return 'text-gray-700';
+    });
+    Handlebars.registerHelper('priceChangeBg', function(change) {
+        if (typeof change !== 'number') change = parseFloat(change);
+        if (isNaN(change)) return 'bg-gray-100';
+        if (change > 0) return 'bg-green-50';
+        if (change < 0) return 'bg-red-50';
+        return 'bg-gray-100';
+    });
+    Handlebars.registerHelper('priceChangeIcon', function(change) {
+        if (typeof change !== 'number') change = parseFloat(change);
+        if (isNaN(change)) return 'trending_flat';
+        if (change > 0) return 'trending_up';
+        if (change < 0) return 'trending_down';
+        return 'trending_flat';
+    });
+    Handlebars.registerHelper('formatSigned', function(value) {
+        if (typeof value !== 'number') value = parseFloat(value);
+        if (isNaN(value)) return value;
+        return value > 0 ? '+' + value : value;
     });
 }
 
@@ -177,49 +295,147 @@ function setupTabs() {
     const stockDetailTemplate = Handlebars.compile(`
         <div class="p-4">
             <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center mb-6">
-                    <img src="./assets/logos/{{symbol}}.svg" alt="{{symbol}}" class="w-12 h-12 mr-4">
-                    <div>
-                        <h2 class="text-2xl font-bold">{{symbol}}</h2>
-                        <p class="text-gray-600">{{current_price}}</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="material-symbols-outlined {{trendClass trend_direction}}">
-                                {{trendIcon trend_direction}}
-                            </span>
-                            <h3 class="font-semibold">Xu hướng</h3>
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <img src="./assets/logos/{{symbol}}.svg" alt="{{symbol}}" class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0">
+                        <div class="flex flex-col min-w-0">
+                            <div class="text-2xl md:text-3xl font-bold mb-1 truncate">{{symbol}}</div>
+                            <div class="flex items-end gap-2">
+                                <span class="text-3xl md:text-4xl font-extrabold {{priceChangeClass trend_change}}">{{current_price}}</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-base font-semibold {{priceChangeBg trend_change}} {{priceChangeClass trend_change}}">
+                                    <span class="material-symbols-outlined text-lg align-middle">{{priceChangeIcon trend_change}}</span>
+                                    <span>{{formatSigned trend_change}}</span>
+                                    <span>({{formatSigned trend_change_percent}}%)</span>
+                                </span>
+                            </div>
                         </div>
-                        <p class="{{trendClass trend_direction}}">{{trend_direction}}</p>
                     </div>
-                    
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="material-symbols-outlined text-blue-500">
-                                {{strengthIcon trend_strength}}
-                            </span>
-                            <h3 class="font-semibold">Độ mạnh</h3>
+                    <div class="flex flex-row gap-2 md:gap-4 flex-shrink-0">
+                        <div class="flex flex-col items-center bg-gray-50 rounded-lg px-3 py-2 min-w-[80px]">
+                            <span class="material-symbols-outlined text-xl mb-1 {{trendClass trend_direction}}">{{trendIcon trend_direction}}</span>
+                            <span class="text-xs text-gray-500">Xu hướng</span>
+                            <span class="font-semibold {{trendClass trend_direction}}">{{trend_direction}}</span>
                         </div>
-                        <p class="text-blue-500">{{trend_strength}}</p>
-                    </div>
-                    
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="material-symbols-outlined text-yellow-500">
-                                {{confidenceIcon trend_confidence}}
-                            </span>
-                            <h3 class="font-semibold">Độ tin cậy</h3>
+                        <div class="flex flex-col items-center bg-gray-50 rounded-lg px-3 py-2 min-w-[80px]">
+                            <span class="material-symbols-outlined text-xl mb-1 text-blue-500">{{strengthIcon trend_strength}}</span>
+                            <span class="text-xs text-gray-500">Độ mạnh</span>
+                            <span class="font-semibold text-blue-500">{{trend_strength}}</span>
                         </div>
-                        <p class="text-yellow-500">{{trend_confidence}}</p>
+                        <div class="flex flex-col items-center bg-gray-50 rounded-lg px-3 py-2 min-w-[80px]">
+                            <span class="material-symbols-outlined text-xl mb-1 text-yellow-500">{{confidenceIcon trend_confidence}}</span>
+                            <span class="text-xs text-gray-500">Tin cậy</span>
+                            <span class="font-semibold text-yellow-500">{{trend_confidence}}</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="mb-6">
-                    <h3 class="font-semibold mb-2">Khuyến nghị</h3>
-                    <p class="p-4 bg-gray-50 rounded-lg">{{recommendation}}</p>
+                    <h3 class="font-semibold mb-2 text-blue-700">Khuyến nghị</h3>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <p>{{recommendation}}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2 text-blue-700">Tóm tắt kỹ thuật</h3>
+                    <div class="p-4 bg-blue-50 rounded-lg whitespace-pre-wrap text-sm">{{technical_summary}}</div>
+                </div>
+
+                <!-- Technical Indicators Table (only in detail tab) -->
+                {{#if indicator_signals}}
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2 text-blue-700">Bảng chỉ báo kỹ thuật</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-gray-200 bg-white rounded-lg">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left border-b border-gray-200">Chỉ báo</th>
+                                    <th class="px-4 py-2 text-right border-b border-gray-200">Giá trị</th>
+                                    <th class="px-4 py-2 text-center border-b border-gray-200">Lực mua/bán</th>
+                                    <th class="px-4 py-2 text-left border-b border-gray-200">Khuyến nghị</th>
+                                    <th class="px-4 py-2 text-left border-b border-gray-200">Mô tả</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each indicator_signals}}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border-b border-gray-200 font-medium">
+                                        {{name}}
+                                        {{#if info}}
+                                        <div class="relative inline-block group ml-1">
+                                            <span class="material-symbols-outlined text-gray-400 cursor-help text-xs align-middle info-icon-tiny">info</span>
+                                            <div class="absolute z-10 hidden group-hover:block bg-white border border-gray-200 shadow-lg rounded-lg p-3 w-64 text-sm text-left left-0 top-full">
+                                                {{info}}
+                                            </div>
+                                        </div>
+                                        {{/if}}
+                                    </td>
+                                    <td class="px-4 py-2 text-right border-b border-gray-200 font-mono">{{format2Decimals value}}</td>
+                                    <td class="px-4 py-2 text-center border-b border-gray-200">
+                                        <span class="px-2 py-1 rounded text-sm font-medium {{#if (eq signal "Mua")}}bg-green-100 text-green-800{{else if (eq signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
+                                            {{signal}}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 border-b border-gray-200 text-sm">{{action}}</td>
+                                    <td class="px-4 py-2 border-b border-gray-200 text-sm text-gray-600">{{description}}</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {{/if}}
+
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2 text-blue-700">Phân tích đường MA</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left border-b border-gray-200">Chu kỳ</th>
+                                    <th class="px-4 py-2 text-right border-b border-gray-200">SMA</th>
+                                    <th class="px-4 py-2 text-center border-b border-gray-200">Tín hiệu SMA</th>
+                                    <th class="px-4 py-2 text-right border-b border-gray-200">EMA</th>
+                                    <th class="px-4 py-2 text-center border-b border-gray-200">Tín hiệu EMA</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {{#each (groupMAByPeriod ma_signals)}}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2 border-b border-gray-200 font-medium">{{period}}</td>
+                                    
+                                    <!-- SMA value and signal -->
+                                    <td class="px-4 py-2 text-right border-b border-gray-200 font-medium">
+                                        {{#if sma.value}}{{format2Decimals sma.value}}{{else}}-{{/if}}
+                                    </td>
+                                    <td class="px-4 py-2 text-center border-b border-gray-200">
+                                        {{#if sma.signal}}
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium {{#if (eq sma.signal "Mua")}}bg-green-100 text-green-800{{else if (eq sma.signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
+                                            {{sma.signal}}
+                                        </span>
+                                        {{else}}
+                                        -
+                                        {{/if}}
+                                    </td>
+                                    
+                                    <!-- EMA value and signal -->
+                                    <td class="px-4 py-2 text-right border-b border-gray-200 font-medium">
+                                        {{#if ema.value}}{{format2Decimals ema.value}}{{else}}-{{/if}}
+                                    </td>
+                                    <td class="px-4 py-2 text-center border-b border-gray-200">
+                                        {{#if ema.signal}}
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium {{#if (eq ema.signal "Mua")}}bg-green-100 text-green-800{{else if (eq ema.signal "Bán")}}bg-red-100 text-red-800{{else}}bg-gray-100 text-gray-800{{/if}}">
+                                            {{ema.signal}}
+                                        </span>
+                                        {{else}}
+                                        -
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -228,7 +444,7 @@ function setupTabs() {
                         <div class="space-y-2">
                             {{#each buy_zones}}
                             <div class="p-3 bg-gray-50 rounded-lg">
-                                <div class="font-medium">{{price}}</div>
+                                <div class="font-medium">{{format2Decimals price}}</div>
                                 <div class="text-sm text-gray-500">Độ tin cậy: {{confidence}}</div>
                                 <div class="text-sm text-gray-600">{{reason}}</div>
                             </div>
@@ -241,7 +457,7 @@ function setupTabs() {
                         <div class="space-y-2">
                             {{#each stop_loss_zones}}
                             <div class="p-3 bg-gray-50 rounded-lg">
-                                <div class="font-medium">{{price}}</div>
+                                <div class="font-medium">{{format2Decimals price}}</div>
                                 <div class="text-sm text-gray-500">Độ tin cậy: {{confidence}}</div>
                                 <div class="text-sm text-gray-600">{{reason}}</div>
                             </div>
@@ -254,7 +470,7 @@ function setupTabs() {
                         <div class="space-y-2">
                             {{#each take_profit_zones}}
                             <div class="p-3 bg-gray-50 rounded-lg">
-                                <div class="font-medium">{{price}}</div>
+                                <div class="font-medium">{{format2Decimals price}}</div>
                                 <div class="text-sm text-gray-500">Độ tin cậy: {{confidence}}</div>
                                 <div class="text-sm text-gray-600">{{reason}}</div>
                             </div>
@@ -356,7 +572,18 @@ function setupTabs() {
         // Find stock data
         const stockData = PREDICTION_DATA.find(data => data.symbol === symbol);
         if (stockData) {
+            console.log('Stock data for ' + symbol + ':', stockData);
+            
+            // Ensure ma_signals is initialized if not present
+            if (!stockData.ma_signals) {
+                console.warn(`Missing ma_signals for ${symbol}, initializing empty array`);
+                stockData.ma_signals = [];
+            }
+            
             tabContent.innerHTML = template(stockData);
+            
+            // Debug - check if ma_signals table is rendered
+            console.log(`ma_signals count for ${symbol}: ${stockData.ma_signals ? stockData.ma_signals.length : 0}`);
         }
 
         document.getElementById('tabContent').appendChild(tabContent);
