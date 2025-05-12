@@ -12,6 +12,25 @@ body {
   transform: rotate(180deg);
 }
 
+/* Recommendation text wrapping */
+.recommendation-text {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  line-height: 1.5;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Ensure proper display of paragraphs in recommendations */
+.recommendation-text p,
+.recommendation-text br {
+  margin-bottom: 0.5em;
+}
+
 /* Tab Styles */
 .tab-button {
   transition: all 0.3s ease;

@@ -17,7 +17,7 @@
     <link href="styles.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
-    <script src="prediction-2025-05-11.js" defer></script>
+    <script src="prediction-2025-05-12.js" defer></script>
     <script src="script.js" defer></script>
 </head>
 <body class="flex flex-col h-screen bg-slate-50">
@@ -83,7 +83,7 @@
                                         <th class="px-4 py-2">Độ tin cậy</th>
                                         <th class="px-4 py-2">MA</th>
                                         <th class="px-4 py-2">Kỹ thuật</th>
-                                        <th class="px-4 py-2">Khuyến nghị</th>
+                                        <th class="px-4 py-2" style="min-width: 200px; max-width: 250px;">Khuyến nghị</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -130,9 +130,9 @@
                 </div>
             </div>
 
-            <div class="p-2 bg-slate-50 rounded mb-3">
+            <div class="p-2 bg-slate-50 rounded mb-3" style="overflow-wrap: break-word;">
                 <div class="font-medium mb-1">Khuyến nghị:</div>
-                <div class="text-sm">{{recommendation}}</div>
+                <div class="text-sm recommendation-text" style="white-space: normal; word-break: break-word;">{{nl2br recommendation}}</div>
             </div>
             
             {{#if ma_signals}}
@@ -235,7 +235,7 @@
                 <span class="text-xs text-gray-500">Không có dữ liệu</span>
                 {{/if}}
             </td>
-            <td class="px-4 py-2 text-sm">{{recommendation}}</td>
+            <td class="px-4 py-2 text-sm recommendation-text" style="min-width: 200px; max-width: 250px; white-space: normal;">{{nl2br recommendation}}</td>
         </tr>
     </script>
 
