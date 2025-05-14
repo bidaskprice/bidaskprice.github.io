@@ -596,6 +596,61 @@ function setupTabs() {
                     <h3 class="font-semibold mb-2 text-blue-700">Tổng hợp chỉ báo kỹ thuật</h3>
                     {{#with (getIndicatorSummary ma_signals indicator_signals)}}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- Technical Indicator Signals -->
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <h4 class="font-medium text-blue-700 mb-2 text-center">Chỉ báo kỹ thuật</h4>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mx-auto mb-2">
+                                <span class="text-2xl font-bold text-purple-700">{{indicator_count}}</span>
+                            </div>
+                            <div class="flex gap-2 justify-center mb-2">
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Mua</span>
+                                    <span class="text-lg font-bold text-green-700">{{tech_buy}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Bán</span>
+                                    <span class="text-lg font-bold text-red-700">{{tech_sell}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">TT</span>
+                                    <span class="text-lg font-bold text-gray-700">{{tech_neutral}}</span>
+                                </div>
+                            </div>
+                            <div class="text-center text-xs text-gray-500">
+                                RSI, MACD, Stochastic, CCI, Williams %R, v.v.
+                            </div>
+                        </div>
+                        
+                        <!-- Combined Signal Analysis -->
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <h4 class="font-medium text-blue-700 mb-2 text-center">Tổng hợp</h4>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mx-auto mb-2">
+                                <span class="text-2xl font-bold text-green-700">{{total_count}}</span>
+                            </div>
+                            <div class="flex gap-2 justify-center mb-2">
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Mua</span>
+                                    <span class="text-lg font-bold text-green-700">{{total_buy}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">Bán</span>
+                                    <span class="text-lg font-bold text-red-700">{{total_sell}}</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
+                                    <span class="text-xs text-gray-500">TT</span>
+                                    <span class="text-lg font-bold text-gray-700">{{total_neutral}}</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                {{#with (allSignalsStrength ../../ma_signals ../../indicator_signals)}}
+                                <span class="px-2 py-1 rounded-full text-sm {{class}} bg-gray-50 inline-flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">{{icon}}</span>
+                                    {{strength}}
+                                </span>
+                                {{/with}}
+                            </div>
+                        </div>
+
                         <!-- MA Signals -->
                         <div class="bg-white rounded-lg p-3 shadow-sm">
                             <h4 class="font-medium text-blue-700 mb-2 text-center">Đường MA</h4>
@@ -633,60 +688,6 @@ function setupTabs() {
                             </div>
                         </div>
 
-                        <!-- Technical Indicator Signals -->
-                        <div class="bg-white rounded-lg p-3 shadow-sm">
-                            <h4 class="font-medium text-blue-700 mb-2 text-center">Chỉ báo kỹ thuật</h4>
-                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mx-auto mb-2">
-                                <span class="text-2xl font-bold text-purple-700">{{indicator_count}}</span>
-                            </div>
-                            <div class="flex gap-2 justify-center mb-2">
-                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
-                                    <span class="text-xs text-gray-500">Mua</span>
-                                    <span class="text-lg font-bold text-green-700">{{tech_buy}}</span>
-                                </div>
-                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
-                                    <span class="text-xs text-gray-500">Bán</span>
-                                    <span class="text-lg font-bold text-red-700">{{tech_sell}}</span>
-                                </div>
-                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
-                                    <span class="text-xs text-gray-500">TT</span>
-                                    <span class="text-lg font-bold text-gray-700">{{tech_neutral}}</span>
-                                </div>
-                            </div>
-                            <div class="text-center text-xs text-gray-500">
-                                RSI, MACD, Stochastic, CCI, Williams %R, v.v.
-                            </div>
-                        </div>
-
-                        <!-- Combined Signal Analysis -->
-                        <div class="bg-white rounded-lg p-3 shadow-sm">
-                            <h4 class="font-medium text-blue-700 mb-2 text-center">Tổng hợp</h4>
-                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mx-auto mb-2">
-                                <span class="text-2xl font-bold text-green-700">{{total_count}}</span>
-                            </div>
-                            <div class="flex gap-2 justify-center mb-2">
-                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
-                                    <span class="text-xs text-gray-500">Mua</span>
-                                    <span class="text-lg font-bold text-green-700">{{total_buy}}</span>
-                                </div>
-                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
-                                    <span class="text-xs text-gray-500">Bán</span>
-                                    <span class="text-lg font-bold text-red-700">{{total_sell}}</span>
-                                </div>
-                                <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 flex-1">
-                                    <span class="text-xs text-gray-500">TT</span>
-                                    <span class="text-lg font-bold text-gray-700">{{total_neutral}}</span>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                {{#with (allSignalsStrength ../../ma_signals ../../indicator_signals)}}
-                                <span class="px-2 py-1 rounded-full text-sm {{class}} bg-gray-50 inline-flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">{{icon}}</span>
-                                    {{strength}}
-                                </span>
-                                {{/with}}
-                            </div>
-                        </div>
                     </div>
                     {{/with}}
                 </div>
@@ -695,7 +696,7 @@ function setupTabs() {
                 {{#if indicator_signals}}
                 <div class="mb-6">
                     <h3 class="font-semibold mb-2 text-blue-700">Bảng chỉ báo kỹ thuật</h3>
-                    <div class="overflow-x-auto">
+                    <div>
                         <table class="min-w-full border border-gray-200 bg-white rounded-lg">
                             <thead class="bg-gray-50">
                                 <tr>
